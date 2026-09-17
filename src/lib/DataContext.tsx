@@ -25,6 +25,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     strawBlendPct: 0,
     industrialBlendPct: 0,
     energyCropBlendPct: 0,
+    nearbyGaLimit: 8,
   });
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const json = (await res.json()) as Dataset;
         if (cancelled) return;
         setData(json);
-        setParams(json.controlDefaults);
+        setParams({ ...json.controlDefaults, nearbyGaLimit: (json.controlDefaults as {nearbyGaLimit?: number}).nearbyGaLimit ?? 8 });
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e));
       } finally {
@@ -55,7 +56,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       error,
       params,
       setParams,
-      resetParams: () => data && setParams(data.controlDefaults),
+      resetParams: () => data && setParams({ ...data.controlDefaults, nearbyGaLimit: (data.controlDefaults as {nearbyGaLimit?: number}).nearbyGaLimit ?? 8 }),
     }),
     [data, loading, error, params]
   );

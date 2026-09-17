@@ -7,6 +7,8 @@ export type ControlParams = {
   strawBlendPct: number;
   industrialBlendPct: number;
   energyCropBlendPct: number;
+  /** How many peer-district GAs to include in addressable offtake (policy: supply to nearby GAs). */
+  nearbyGaLimit: number;
 };
 
 export type District = {

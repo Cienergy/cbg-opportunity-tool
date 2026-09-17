@@ -1,5 +1,6 @@
 import type { ControlParams, District, Plant } from "./types";
 import { matchesState, normalizeStateName } from "./types";
+import type { GasCatchment } from "./gasCatchment";
 
 export type PillarLevel = "strong" | "ok" | "weak";
 
@@ -51,7 +52,12 @@ export function plantsInDistrict(plants: Plant[], d: District) {
   });
 }
 
-export function assessDistrict(d: District, params: ControlParams, plants: Plant[] = []): Feasibility {
+export function assessDistrict(
+  d: District,
+  params: ControlParams,
+  plants: Plant[] = [],
+  catchment?: GasCatchment | null
+): Feasibility {
   const localPlants = plantsInDistrict(plants, d);
   const functional = localPlants.filter((p) => /functional|completed/i.test(p.status || "")).length
     || d.functionalCompleted;
@@ -62,16 +68,20 @@ export function assessDistrict(d: District, params: ControlParams, plants: Plant
   const totalPlants = Math.max(d.plantCount, localPlants.length);
   const totalCap = localPlants.reduce((s, p) => s + (p.capacityTpd || 0), 0) || d.capacityTpd;
 
-  // Demand pillar (0-100)
+  const demandNow = catchment?.addressableNow ?? d.currentDemandTpd;
+  const demand5y = catchment?.addressable5y ?? d.futureDemandTpd;
+
+  // Demand pillar (0-100) — uses addressable (district/home GA + nearby GAs) when available
   let demandPts = 0;
-  if (d.currentDemandTpd >= params.netCbgDemandTpd * 2) demandPts += 50;
-  else if (d.currentDemandTpd >= params.netCbgDemandTpd) demandPts += 35;
-  else if (d.currentDemandTpd >= params.netCbgDemandTpd * 0.5) demandPts += 18;
+  if (demandNow >= params.netCbgDemandTpd * 2) demandPts += 45;
+  else if (demandNow >= params.netCbgDemandTpd) demandPts += 32;
+  else if (demandNow >= params.netCbgDemandTpd * 0.5) demandPts += 16;
 
-  if (d.futureDemandTpd >= params.netEstDemand5yTpd * 2) demandPts += 40;
-  else if (d.futureDemandTpd >= params.netEstDemand5yTpd) demandPts += 28;
-  else if (d.futureDemandTpd >= params.netEstDemand5yTpd * 0.5) demandPts += 12;
+  if (demand5y >= params.netEstDemand5yTpd * 2) demandPts += 35;
+  else if (demand5y >= params.netEstDemand5yTpd) demandPts += 25;
+  else if (demand5y >= params.netEstDemand5yTpd * 0.5) demandPts += 12;
 
+  if (catchment && catchment.nearby.length > 0) demandPts += 10;
   if (d.cngStations >= 20) demandPts += 10;
   else if (d.cngStations >= 5) demandPts += 5;
   demandPts = Math.min(100, demandPts);
@@ -82,16 +92,18 @@ export function assessDistrict(d: District, params: ControlParams, plants: Plant
     level: levelFrom(demandPts),
     headline:
       demandPts >= 75
-        ? "Strong offtake outlook"
+        ? "Strong offtake (incl. nearby GAs)"
         : demandPts >= 45
-          ? "Moderate demand base"
-          : "Thin demand today",
-    detail: `Current CBG demand ${fmt(d.currentDemandTpd, 2)} TPD vs threshold ${fmt(params.netCbgDemandTpd, 1)} TPD. 5-year estimate ${fmt(d.futureDemandTpd, 2)} TPD.`,
+          ? "Moderate addressable demand"
+          : "Thin offtake catchment",
+    detail: catchment
+      ? `Addressable ${fmt(demandNow, 2)} TPD today → ${fmt(demand5y, 2)} TPD in 5Y (home GA + ${catchment.nearby.length} nearby GAs). District-only ${fmt(d.currentDemandTpd, 2)} TPD.`
+      : `Current CBG demand ${fmt(d.currentDemandTpd, 2)} TPD vs threshold ${fmt(params.netCbgDemandTpd, 1)} TPD. 5-year estimate ${fmt(d.futureDemandTpd, 2)} TPD.`,
     metrics: [
-      { label: "Current demand", value: `${fmt(d.currentDemandTpd, 2)} TPD` },
-      { label: "5Y demand", value: `${fmt(d.futureDemandTpd, 2)} TPD` },
-      { label: "CNG stations", value: fmt(d.cngStations, 0) },
-      { label: "PNG households", value: fmt(d.pngHh, 0) },
+      { label: "Addressable now", value: `${fmt(demandNow, 2)} TPD` },
+      { label: "Addressable 5Y", value: `${fmt(demand5y, 2)} TPD` },
+      { label: "District only", value: `${fmt(d.currentDemandTpd, 2)} TPD` },
+      { label: "Growth", value: catchment ? `${fmt(catchment.growthMultiple, 1)}× · CAGR ${fmt(catchment.cagrPct, 1)}%` : `${fmt(d.futureDemandTpd, 1)} TPD @5Y` },
     ],
   };
 

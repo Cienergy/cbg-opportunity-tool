@@ -37,6 +37,13 @@ export function ThresholdsPage() {
             <label>Maximum useful pipeline distance (km)</label>
             <input type="number" step="1" value={params.nearestPipelineKm} onChange={(e) => set("nearestPipelineKm", Number(e.target.value))} />
           </div>
+          <div className="field">
+            <label>Nearby GAs in offtake catchment (count)</label>
+            <input type="number" step="1" min={0} max={20} value={params.nearbyGaLimit ?? 8} onChange={(e) => set("nearbyGaLimit", Number(e.target.value))} />
+          </div>
+          <p className="muted" style={{ margin: 0, fontSize: "0.88rem" }}>
+            Addressable demand = home GA(s) covering this district + GAs covering peer districts in the same state (policy: supply to nearby GAs).
+          </p>
           <div className="btn-row">
             <button className="btn primary" type="button" onClick={resetParams}>Reset to Excel defaults</button>
           </div>

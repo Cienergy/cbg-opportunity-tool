@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { IndiaMap } from "../components/IndiaMap";
+import { DistrictCharts } from "../components/DistrictCharts";
 import { useData } from "../lib/DataContext";
 import {
   assessDistrict,
@@ -9,6 +10,7 @@ import {
   rankDistricts,
   type Pillar,
 } from "../lib/feasibility";
+import { buildGasCatchment } from "../lib/gasCatchment";
 import { matchesState, type District } from "../lib/types";
 
 export function DistrictPage() {
@@ -36,7 +38,6 @@ export function DistrictPage() {
         ) || null
       );
     }
-    // default: best scoring district
     return rankDistricts(data.districts, params, data.plants)[0]?.d || data.districts[0] || null;
   }, [data, params, searchParams]);
 
@@ -54,16 +55,6 @@ export function DistrictPage() {
     setStateFilter(d.state || "");
   };
 
-  const feasibility = useMemo(() => {
-    if (!data || !selected) return null;
-    return assessDistrict(selected, params, data.plants);
-  }, [data, selected, params]);
-
-  const localPlants = useMemo(() => {
-    if (!data || !selected) return [];
-    return plantsInDistrict(data.plants, selected);
-  }, [data, selected]);
-
   const nearby = useMemo(() => {
     if (!data || !selected?.state) return [];
     return rankDistricts(
@@ -72,6 +63,26 @@ export function DistrictPage() {
       data.plants
     ).slice(0, 12);
   }, [data, selected, params]);
+
+  const catchment = useMemo(() => {
+    if (!data || !selected) return null;
+    return buildGasCatchment(
+      selected,
+      data.gas,
+      nearby.map((n) => n.d),
+      params.nearbyGaLimit ?? 8
+    );
+  }, [data, selected, nearby, params.nearbyGaLimit]);
+
+  const feasibility = useMemo(() => {
+    if (!data || !selected) return null;
+    return assessDistrict(selected, params, data.plants, catchment);
+  }, [data, selected, params, catchment]);
+
+  const localPlants = useMemo(() => {
+    if (!data || !selected) return [];
+    return plantsInDistrict(data.plants, selected);
+  }, [data, selected]);
 
   const searchHits = useMemo(() => {
     if (!data || query.trim().length < 2) return [];
@@ -99,9 +110,12 @@ export function DistrictPage() {
   }, [data, params]);
 
   const active = feasibility?.pillars.find((p) => p.id === activePillar);
+  const gaRows = catchment ? [...catchment.home, ...catchment.nearby] : [];
 
   if (loading) return <div className="loading">Loading district intelligence…</div>;
-  if (error || !data || !selected || !feasibility) return <div className="error">{error || "No data"}</div>;
+  if (error || !data || !selected || !feasibility || !catchment) {
+    return <div className="error">{error || "No data"}</div>;
+  }
 
   return (
     <div className="page">
@@ -112,15 +126,7 @@ export function DistrictPage() {
             <div className="panel-body">
               <div className="field">
                 <label>State</label>
-                <select
-                  value={stateFilter}
-                  onChange={(e) => {
-                    setStateFilter(e.target.value);
-                    if (e.target.value) {
-                      // jump map focus; keep district until user picks
-                    }
-                  }}
-                >
+                <select value={stateFilter} onChange={(e) => setStateFilter(e.target.value)}>
                   <option value="">All states</option>
                   {states.map((s) => (
                     <option key={s} value={s}>{s}</option>
@@ -192,6 +198,21 @@ export function DistrictPage() {
               }}
             />
           </div>
+
+          <div className="panel">
+            <div className="panel-head"><h2>Offtake catchment</h2></div>
+            <div className="panel-body">
+              <div className="metrics">
+                <div className="kv"><div className="k">Addressable now</div><div className="v">{fmt(catchment.addressableNow, 1)} TPD</div></div>
+                <div className="kv"><div className="k">Addressable 5Y</div><div className="v">{fmt(catchment.addressable5y, 1)} TPD</div></div>
+                <div className="kv"><div className="k">Home GAs</div><div className="v">{catchment.home.length}</div></div>
+                <div className="kv"><div className="k">Nearby GAs</div><div className="v">{catchment.nearby.length}</div></div>
+              </div>
+              <p className="muted" style={{ margin: "0.75rem 0 0", fontSize: "0.84rem" }}>
+                Policy: CBG can supply home GA and nearby GAs. Growth {fmt(catchment.growthMultiple, 1)}× · CAGR {fmt(catchment.cagrPct, 1)}%.
+              </p>
+            </div>
+          </div>
         </aside>
 
         <section className="main">
@@ -203,7 +224,7 @@ export function DistrictPage() {
               <div className="btn-row" style={{ marginTop: "0.75rem" }}>
                 <span className="btn" style={{ cursor: "default" }}>Gov support: {selected.govSupport || "—"}</span>
                 <span className="btn" style={{ cursor: "default" }}>
-                  Flags: D {selected.flagDemand ? "Y" : "N"} · B {selected.flagRawMaterial ? "Y" : "N"} · P {selected.flagNearestPipeline ? "Y" : "N"}
+                  Addressable {fmt(catchment.addressableNow, 1)} → {fmt(catchment.addressable5y, 1)} TPD
                 </span>
               </div>
             </div>
@@ -228,6 +249,8 @@ export function DistrictPage() {
             ))}
           </div>
 
+          <DistrictCharts district={selected} catchment={catchment} plants={localPlants} />
+
           <div className="panel">
             <div className="panel-head">
               <h2>{active?.label} — diligence detail</h2>
@@ -243,6 +266,47 @@ export function DistrictPage() {
                       </div>
                     ))}
                   </div>
+
+                  {activePillar === "demand" && (
+                    <div style={{ marginTop: "1rem" }}>
+                      <div className="muted" style={{ marginBottom: "0.5rem" }}>
+                        Home + nearby GAs in offtake catchment
+                      </div>
+                      <div className="table-wrap">
+                        <table className="data">
+                          <thead>
+                            <tr>
+                              <th>Role</th>
+                              <th>GA ID</th>
+                              <th>Area</th>
+                              <th>Entity</th>
+                              <th>Matched</th>
+                              <th>Now TPD</th>
+                              <th>5Y TPD</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {gaRows.map((l) => (
+                              <tr key={`${l.role}-${l.ga.gaId}-${l.ga.area}`} style={{ cursor: "default" }}>
+                                <td>{l.role}</td>
+                                <td>{l.ga.gaId}</td>
+                                <td>{l.ga.area}</td>
+                                <td>{l.ga.entity}</td>
+                                <td>{l.matchedOn}</td>
+                                <td>{fmt(l.ga.currentDemandTpd, 2)}</td>
+                                <td>{fmt(l.ga.futureDemandTpd, 2)}</td>
+                              </tr>
+                            ))}
+                            {gaRows.length === 0 && (
+                              <tr style={{ cursor: "default" }}>
+                                <td colSpan={7}>No GA area string matched this district — using district demand only.</td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
 
                   {activePillar === "competition" && (
                     <div style={{ marginTop: "1rem" }}>
