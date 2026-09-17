@@ -17,7 +17,7 @@ import type { GasCatchment } from "../lib/gasCatchment";
 import { fmt } from "../lib/feasibility";
 import type { District, Plant } from "../lib/types";
 
-const COLORS = ["#0f5c45", "#9a4d1c", "#2f5d8a", "#8a6a1f", "#6b4f3a", "#4a7c59"];
+const COLORS = ["#3fa87a", "#c4a574", "#5b8fbf", "#d4b06a", "#8b7a6a", "#4a9b7a"];
 
 type Props = {
   district: District;
@@ -107,13 +107,13 @@ export function DistrictCharts({ district, catchment, plants }: Props) {
         <div className="panel-body chart-box">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={growthStack}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0d8cc" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,236,233,0.06)" />
               <XAxis dataKey="period" />
               <YAxis unit=" TPD" width={48} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="Home GA" stackId="a" fill="#0f5c45" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="Nearby GAs" stackId="a" fill="#9a4d1c" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="Home GA" stackId="a" fill="#3fa87a" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="Nearby GAs" stackId="a" fill="#c4a574" radius={[2, 2, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
           <p className="chart-note">
@@ -132,13 +132,13 @@ export function DistrictCharts({ district, catchment, plants }: Props) {
         <div className="panel-body chart-box">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={trajectory}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0d8cc" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,236,233,0.06)" />
               <XAxis dataKey="year" />
               <YAxis width={48} />
               <Tooltip />
               <Legend />
-              <Area type="monotone" dataKey="district" name="District only" stroke="#2f5d8a" fill="#2f5d8a33" />
-              <Area type="monotone" dataKey="addressable" name="With nearby GAs" stroke="#0f5c45" fill="#0f5c4533" />
+              <Area type="monotone" dataKey="district" name="District only" stroke="#5b8fbf" fill="rgba(91,143,191,0.2)" />
+              <Area type="monotone" dataKey="addressable" name="With nearby GAs" stroke="#3fa87a" fill="rgba(63,168,122,0.2)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -152,13 +152,13 @@ export function DistrictCharts({ district, catchment, plants }: Props) {
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={gaBars} layout="vertical" margin={{ left: 24, right: 12 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0d8cc" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,236,233,0.06)" />
                 <XAxis type="number" />
                 <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="now" name="Today TPD" fill="#2f5d8a" />
-                <Bar dataKey="y5" name="5Y TPD" fill="#0f5c45" />
+                <Bar dataKey="now" name="Today TPD" fill="#5b8fbf" />
+                <Bar dataKey="y5" name="5Y TPD" fill="#3fa87a" />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -170,13 +170,13 @@ export function DistrictCharts({ district, catchment, plants }: Props) {
         <div className="panel-body chart-box">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={infraGrowth}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0d8cc" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,236,233,0.06)" />
               <XAxis dataKey="metric" />
               <YAxis width={40} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="Today" fill="#8a6a1f" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="Year 5" fill="#0f5c45" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="Today" fill="#c4a574" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="Year 5" fill="#3fa87a" radius={[2, 2, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

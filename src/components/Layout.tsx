@@ -2,9 +2,9 @@ import { NavLink, Outlet } from "react-router-dom";
 import { useData } from "../lib/DataContext";
 
 const links = [
-  { to: "/", label: "District feasibility", end: true },
-  { to: "/scan", label: "Scan opportunities" },
-  { to: "/thresholds", label: "Thresholds" },
+  { to: "/", label: "District", end: true },
+  { to: "/scan", label: "Scan", end: false },
+  { to: "/thresholds", label: "Thresholds", end: false },
 ];
 
 export function Layout() {
@@ -13,11 +13,14 @@ export function Layout() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <strong>CBG Feasibility Desk</strong>
-          <span>
-            Investor / BD view · district-level demand · biomass · pipeline · competition
-            {data ? ` · ${data.meta.districtCount} districts` : ""}
-          </span>
+          <div className="brand-mark" aria-hidden>C</div>
+          <div>
+            <strong>Feasibility Desk</strong>
+            <span>
+              CBG · Investor intelligence
+              {data ? ` · ${data.meta.districtCount} districts` : ""}
+            </span>
+          </div>
         </div>
         <nav className="nav">
           {links.map((l) => (

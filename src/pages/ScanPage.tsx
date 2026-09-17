@@ -35,7 +35,7 @@ export function ScanPage() {
       </div>
 
       <div className="panel" style={{ marginBottom: "1rem" }}>
-        <div className="panel-body" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.75rem" }}>
+        <div className="panel-body scan-filters">
           <div className="field">
             <label>State</label>
             <select value={state} onChange={(e) => setState(e.target.value)}>
