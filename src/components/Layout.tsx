@@ -2,11 +2,9 @@ import { NavLink, Outlet } from "react-router-dom";
 import { useData } from "../lib/DataContext";
 
 const links = [
-  { to: "/", label: "Best locations" },
-  { to: "/states", label: "States & districts" },
-  { to: "/gas", label: "GAs" },
-  { to: "/ma", label: "M&A options" },
-  { to: "/insights", label: "Insights" },
+  { to: "/", label: "District feasibility", end: true },
+  { to: "/scan", label: "Scan opportunities" },
+  { to: "/thresholds", label: "Thresholds" },
 ];
 
 export function Layout() {
@@ -15,14 +13,15 @@ export function Layout() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <strong>CBG Opportunity Desk</strong>
+          <strong>CBG Feasibility Desk</strong>
           <span>
-            Internal · {data ? `${data.meta.districtCount} districts · ${data.meta.gaCount} GAs · ${data.meta.plantCount} plants` : "loading…"}
+            Investor / BD view · district-level demand · biomass · pipeline · competition
+            {data ? ` · ${data.meta.districtCount} districts` : ""}
           </span>
         </div>
         <nav className="nav">
           {links.map((l) => (
-            <NavLink key={l.to} to={l.to} end={l.to === "/"}>
+            <NavLink key={l.to} to={l.to} end={l.end}>
               {l.label}
             </NavLink>
           ))}

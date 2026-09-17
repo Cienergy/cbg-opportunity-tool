@@ -1,42 +1,26 @@
-# CBG Opportunity Desk
+# CBG Feasibility Desk
 
-Internal front-end for exploring CBG plant locations, biomass surplus, pipeline proximity, GA coverage, M&A shortlists and business insights.
+District-first internal tool for investors and BD / sales strategy.
 
-Built from `data/CBG Analysis with Summary 3Y. incl.xlsx`.
+**Job to be done:** given a district, decide plant feasibility across four pillars:
+
+1. **Demand** — current & 5Y CBG offtake, CNG/PNG base  
+2. **Biomass** — net / crop surplus vs feedstock already used  
+3. **Pipeline** — nearest NG pipeline, distance, capacity  
+4. **Competition** — registered plants, status mix, capacity  
 
 ## Pages
 
-1. **Best locations** — tweak Control-sheet style thresholds; ranked districts + India map
-2. **States & districts** — select/highlight a state, inspect district demand / surplus / pipeline, nearby districts
-3. **GAs** — same flow for Geographical Areas
-4. **M&A options** — parameterised plant shortlist joined to district context
-5. **Insights** — charts and pipeline snapshot
+- **District feasibility** — search / map → Invest·Watch·Pass dossier  
+- **Scan opportunities** — ranked shortlist that opens a district dossier  
+- **Thresholds** — Control-sheet style knobs  
 
-## Local run
+## Local
 
 ```bash
 npm install
-npm run data    # regenerate public/data/dataset.json from the Excel
+npm run data
 npm run dev
 ```
 
-## GitHub Pages
-
-```bash
-# build with repo base path
-npm run build:gh
-```
-
-Or push to `main` and let `.github/workflows/deploy-pages.yml` publish.
-
-Site URL (after Pages is enabled):
-
-`https://<org-or-user>.github.io/cbg-opportunity-tool/`
-
-## Refresh data
-
-Replace `data/CBG Analysis with Summary 3Y. incl.xlsx`, then:
-
-```bash
-npm run data
-```
+Source workbook: `data/CBG Analysis with Summary 3Y. incl.xlsx`
