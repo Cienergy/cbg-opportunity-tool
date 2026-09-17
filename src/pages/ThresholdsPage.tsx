@@ -12,11 +12,10 @@ export function ThresholdsPage() {
   return (
     <div className="page" style={{ maxWidth: 720 }}>
       <div className="scan-hero" style={{ marginBottom: "1rem" }}>
-        <h1>Thresholds</h1>
-        <p>
-          These are the knobs an investor / BD lead tweaks before judging a district.
-          Defaults come from the Excel Control sheet.
-        </p>
+        <div>
+          <h1>Thresholds</h1>
+          <p>Screening knobs from the Control sheet.</p>
+        </div>
       </div>
 
       <div className="panel">

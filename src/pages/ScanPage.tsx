@@ -27,11 +27,10 @@ export function ScanPage() {
   return (
     <div className="page">
       <div className="scan-hero" style={{ marginBottom: "1rem" }}>
-        <h1>Scan opportunities</h1>
-        <p>
-          Ranked district shortlist for BD / investment screening. Open any row for the full
-          demand · biomass · pipeline · competition dossier.
-        </p>
+        <div>
+          <h1>Scan</h1>
+          <p>Ranked shortlist — open a row for the full dossier.</p>
+        </div>
       </div>
 
       <div className="panel" style={{ marginBottom: "1rem" }}>

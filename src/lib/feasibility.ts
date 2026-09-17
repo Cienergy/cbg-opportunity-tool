@@ -96,9 +96,7 @@ export function assessDistrict(
         : demandPts >= 45
           ? "Moderate addressable demand"
           : "Thin offtake catchment",
-    detail: catchment
-      ? `Addressable ${fmt(demandNow, 2)} TPD today → ${fmt(demand5y, 2)} TPD in 5Y (home GA + ${catchment.nearby.length} nearby GAs). District-only ${fmt(d.currentDemandTpd, 2)} TPD.`
-      : `Current CBG demand ${fmt(d.currentDemandTpd, 2)} TPD vs threshold ${fmt(params.netCbgDemandTpd, 1)} TPD. 5-year estimate ${fmt(d.futureDemandTpd, 2)} TPD.`,
+    detail: `${fmt(demandNow, 1)} → ${fmt(demand5y, 1)} TPD`,
     metrics: [
       { label: "Addressable now", value: `${fmt(demandNow, 2)} TPD` },
       { label: "Addressable 5Y", value: `${fmt(demand5y, 2)} TPD` },
@@ -127,7 +125,7 @@ export function assessDistrict(
         : bioPts >= 45
           ? "Adequate surplus"
           : "Feedstock constrained",
-    detail: `Net surplus ${fmt(d.netSurplusKtpa, 1)} KTPA (threshold ${fmt(params.netBiomassSurplusKtpa, 0)}). Existing plants use ${fmt(d.feedstockUsedTpd, 1)} TPD feedstock.`,
+    detail: `${fmt(d.netSurplusKtpa, 0)} KTPA surplus`,
     metrics: [
       { label: "Net surplus", value: `${fmt(d.netSurplusKtpa, 1)} KTPA` },
       { label: "Gross surplus", value: `${fmt(d.grossSurplusKtpa, 1)} KTPA` },
@@ -162,9 +160,7 @@ export function assessDistrict(
         : pipePts >= 45
           ? "Reachable pipeline"
           : "Weak pipeline access",
-    detail: d.pipelineName
-      ? `${d.pipelineName} · ~${fmt(dist, 1)} km · ${fmt(d.pipelineMmscmd, 1)} MMSCMD`
-      : "No linked pipeline in the workbook for this district.",
+    detail: d.pipelineName ? `${d.pipelineName} · ${fmt(dist, 0)} km` : "No pipeline linked",
     metrics: [
       { label: "Pipeline", value: d.pipelineName || "Not linked" },
       { label: "Distance", value: dist != null ? `${fmt(dist, 1)} km` : "—" },
@@ -199,7 +195,7 @@ export function assessDistrict(
         : functional === 0
           ? "No live plants yet"
           : `${functional} live plant${functional === 1 ? "" : "s"} already in`,
-    detail: `${totalPlants} registered · ${functional} functional/completed · ${under} under construction · ${yet} yet to start · ~${fmt(totalCap, 1)} TPD capacity.`,
+    detail: `${totalPlants} plants · ${fmt(totalCap, 0)} TPD`,
     metrics: [
       { label: "Total plants", value: String(totalPlants) },
       { label: "Functional / completed", value: String(functional) },
@@ -223,10 +219,10 @@ export function assessDistrict(
 
   const summary =
     verdict === "Invest"
-      ? "District clears the core feasibility tests for a CBG bet — demand, feedstock and offtake path look aligned."
+      ? "Demand, feedstock and offtake look aligned."
       : verdict === "Watch"
-        ? "Mixed feasibility. Useable with the right plant size / feedstock mix, but one or more pillars need diligence."
-        : "Weak case on current thresholds. Better as a pass unless strategy explicitly targets this profile.";
+        ? "Mixed — size and feedstock need diligence."
+        : "Weak on current thresholds.";
 
   return { score, verdict, summary, pillars };
 }
@@ -248,8 +244,6 @@ export function assessGa(g: import("./types").GA, params: ControlParams): Feasib
 
   const growth =
     demandNow > 0 ? demand5y / demandNow : demand5y > 0 ? 2 : 1;
-  const cagr =
-    demandNow > 0 && demand5y > 0 ? (Math.pow(demand5y / demandNow, 1 / 5) - 1) * 100 : 0;
 
   const demand: Pillar = {
     id: "demand",
@@ -257,7 +251,7 @@ export function assessGa(g: import("./types").GA, params: ControlParams): Feasib
     level: levelFrom(demandPts),
     headline:
       demandPts >= 75 ? "Strong GA offtake" : demandPts >= 45 ? "Moderate GA demand" : "Thin GA demand",
-    detail: `GA demand ${fmt(demandNow, 2)} TPD → ${fmt(demand5y, 2)} TPD in 5Y (${fmt(growth, 1)}× · CAGR ${fmt(cagr, 1)}%).`,
+    detail: `${fmt(demandNow, 1)} → ${fmt(demand5y, 1)} TPD · ${fmt(growth, 1)}×`,
     metrics: [
       { label: "Current demand", value: `${fmt(demandNow, 2)} TPD` },
       { label: "5Y demand", value: `${fmt(demand5y, 2)} TPD` },
@@ -279,7 +273,7 @@ export function assessGa(g: import("./types").GA, params: ControlParams): Feasib
     level: levelFrom(bioPts),
     headline:
       bioPts >= 75 ? "Healthy surplus in GA" : bioPts >= 45 ? "Adequate surplus" : "Feedstock tight",
-    detail: `Net surplus ${fmt(g.netSurplusKtpa, 1)} KTPA · feedstock used ${fmt(g.feedstockUsedTpd, 1)} TPD.`,
+    detail: `${fmt(g.netSurplusKtpa, 0)} KTPA surplus`,
     metrics: [
       { label: "Net surplus", value: `${fmt(g.netSurplusKtpa, 1)} KTPA` },
       { label: "Gross surplus", value: `${fmt(g.grossSurplusKtpa, 1)} KTPA` },
@@ -301,9 +295,7 @@ export function assessGa(g: import("./types").GA, params: ControlParams): Feasib
     label: "Pipeline",
     level: levelFrom(pipePts),
     headline: pipePts >= 75 ? "Pipeline-backed GA" : pipePts >= 45 ? "Partial infra link" : "Weak pipeline story",
-    detail: g.pipelineName
-      ? `${g.pipelineName} · ${fmt(g.pipelineDistanceKm, 0)} km · ${fmt(g.pipelineMmscmd, 1)} MMSCMD`
-      : "No pipeline linked on this GA row.",
+    detail: g.pipelineName ? `${g.pipelineName}` : "No pipeline linked",
     metrics: [
       { label: "Pipeline", value: g.pipelineName || "—" },
       { label: "Type", value: g.pipelineType || "—" },
@@ -328,7 +320,7 @@ export function assessGa(g: import("./types").GA, params: ControlParams): Feasib
       total === 0
         ? "White-space GA"
         : `${g.functionalCompleted || 0} live · ${total} total plants`,
-    detail: `Capacity ${fmt(g.capacityTpd, 1)} TPD · UC ${g.underConstruction || 0} · yet to start ${g.yetToStart || 0}.`,
+    detail: `${fmt(g.capacityTpd, 0)} TPD capacity`,
     metrics: [
       { label: "Plants", value: String(total) },
       { label: "Functional", value: String(g.functionalCompleted || 0) },
@@ -349,10 +341,10 @@ export function assessGa(g: import("./types").GA, params: ControlParams): Feasib
 
   const summary =
     verdict === "Invest"
-      ? "This GA looks investable on demand, biomass and infrastructure together."
+      ? "Demand, biomass and infra look aligned."
       : verdict === "Watch"
-        ? "Mixed GA profile — workable with the right plant size and offtake structure."
-        : "Weak GA on current thresholds; better as a pass unless strategic.";
+        ? "Mixed — plant size needs diligence."
+        : "Weak on current thresholds.";
 
   return { score, verdict, summary, pillars };
 }

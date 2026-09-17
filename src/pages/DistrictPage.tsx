@@ -208,9 +208,6 @@ export function DistrictPage() {
                 <div className="kv"><div className="k">Home GAs</div><div className="v">{catchment.home.length}</div></div>
                 <div className="kv"><div className="k">Nearby GAs</div><div className="v">{catchment.nearby.length}</div></div>
               </div>
-              <p className="muted" style={{ margin: "0.75rem 0 0", fontSize: "0.84rem" }}>
-                Policy: CBG can supply home GA and nearby GAs. Growth {fmt(catchment.growthMultiple, 1)}× · CAGR {fmt(catchment.cagrPct, 1)}%.
-              </p>
             </div>
           </div>
         </aside>
@@ -238,12 +235,12 @@ export function DistrictPage() {
           <div className={`panel verdict ${feasibility.verdict}`}>
             <div className="verdict-badge">{feasibility.verdict}</div>
             <div>
-              <h1>{selected.district}, {selected.state}</h1>
-              <p>{feasibility.summary}</p>
-              <div className="btn-row" style={{ marginTop: "0.75rem" }}>
-                <span className="btn" style={{ cursor: "default" }}>Gov support: {selected.govSupport || "—"}</span>
+              <h1>{selected.district}</h1>
+              <p className="meta-line">{selected.state} · {feasibility.summary}</p>
+              <div className="btn-row" style={{ marginTop: "0.55rem" }}>
+                {selected.govSupport ? <span className="btn" style={{ cursor: "default" }}>{selected.govSupport}</span> : null}
                 <span className="btn" style={{ cursor: "default" }}>
-                  Addressable {fmt(catchment.addressableNow, 1)} → {fmt(catchment.addressable5y, 1)} TPD
+                  {fmt(catchment.addressableNow, 1)} → {fmt(catchment.addressable5y, 1)} TPD
                 </span>
               </div>
             </div>
@@ -263,7 +260,6 @@ export function DistrictPage() {
                   <span className={`level ${p.level}`}>{p.level}</span>
                 </div>
                 <h3>{p.headline}</h3>
-                <p>{p.detail}</p>
               </button>
             ))}
           </div>
@@ -272,7 +268,7 @@ export function DistrictPage() {
 
           <div className="panel">
             <div className="panel-head">
-              <h2>{active?.label} — diligence detail</h2>
+              <h2>{active?.label}</h2>
             </div>
             <div className="panel-body">
               {active && (
@@ -287,21 +283,16 @@ export function DistrictPage() {
                   </div>
 
                   {activePillar === "demand" && (
-                    <div style={{ marginTop: "1rem" }}>
-                      <div className="muted" style={{ marginBottom: "0.5rem" }}>
-                        Home + nearby GAs in offtake catchment
-                      </div>
+                    <div style={{ marginTop: "0.85rem" }}>
                       <div className="table-wrap">
                         <table className="data">
                           <thead>
                             <tr>
                               <th>Role</th>
-                              <th>GA ID</th>
+                              <th>GA</th>
                               <th>Area</th>
-                              <th>Entity</th>
-                              <th>Matched</th>
-                              <th>Now TPD</th>
-                              <th>5Y TPD</th>
+                              <th>Now</th>
+                              <th>5Y</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -310,15 +301,13 @@ export function DistrictPage() {
                                 <td>{l.role}</td>
                                 <td>{l.ga.gaId}</td>
                                 <td>{l.ga.area}</td>
-                                <td>{l.ga.entity}</td>
-                                <td>{l.matchedOn}</td>
-                                <td>{fmt(l.ga.currentDemandTpd, 2)}</td>
-                                <td>{fmt(l.ga.futureDemandTpd, 2)}</td>
+                                <td>{fmt(l.ga.currentDemandTpd, 1)}</td>
+                                <td>{fmt(l.ga.futureDemandTpd, 1)}</td>
                               </tr>
                             ))}
                             {gaRows.length === 0 && (
                               <tr style={{ cursor: "default" }}>
-                                <td colSpan={7}>No GA area string matched this district — using district demand only.</td>
+                                <td colSpan={5}>No GA match — using district demand only.</td>
                               </tr>
                             )}
                           </tbody>
@@ -328,12 +317,9 @@ export function DistrictPage() {
                   )}
 
                   {activePillar === "competition" && (
-                    <div style={{ marginTop: "1rem" }}>
-                      <div className="muted" style={{ marginBottom: "0.5rem" }}>
-                        Plants registered in this district
-                      </div>
+                    <div style={{ marginTop: "0.85rem" }}>
                       {localPlants.length === 0 ? (
-                        <p className="muted">No plant-level matches — workbook shows {selected.plantCount} plant(s) at district aggregate.</p>
+                        <p className="muted">{selected.plantCount} plant(s) at district aggregate.</p>
                       ) : (
                         <div className="plant-list">
                           {localPlants.map((p) => (
@@ -346,14 +332,14 @@ export function DistrictPage() {
                                 )}
                               </h4>
                               <p>
-                                {p.entityName} · {p.status} · {fmt(p.capacityTpd, 1)} TPD
+                                {p.status} · {fmt(p.capacityTpd, 1)} TPD
                               </p>
                             </div>
                           ))}
                         </div>
                       )}
                       {selected.plants.length > 0 && localPlants.length === 0 && (
-                        <div className="plant-list" style={{ marginTop: "0.75rem" }}>
+                        <div className="plant-list" style={{ marginTop: "0.65rem" }}>
                           {selected.plants.map((name) => (
                             <div className="plant-card" key={name}><h4>{name}</h4></div>
                           ))}
@@ -363,10 +349,9 @@ export function DistrictPage() {
                   )}
 
                   {activePillar === "pipeline" && selected.pipelineName && (
-                    <p className="muted" style={{ marginTop: "1rem" }}>
-                      Offtake path hinges on access to <strong>{selected.pipelineName}</strong>
-                      {selected.pipelineDistanceKm != null ? ` (~${fmt(selected.pipelineDistanceKm, 1)} km)` : ""}.
-                      Treat distance as indicative from the workbook, not surveyed ROW.
+                    <p className="muted" style={{ marginTop: "0.85rem" }}>
+                      {selected.pipelineName}
+                      {selected.pipelineDistanceKm != null ? ` · ${fmt(selected.pipelineDistanceKm, 0)} km` : ""}
                     </p>
                   )}
                 </>

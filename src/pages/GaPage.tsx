@@ -146,12 +146,8 @@ export function GaPage() {
     <div className="page">
       <div className="scan-hero">
         <div>
-          <p className="eyebrow-tag">Geographical Areas</p>
-          <h1>GA offtake desk</h1>
-          <p>
-            Screen CGD GAs the same way you screen districts — demand growth, biomass, pipeline and competition —
-            then drill into covered districts.
-          </p>
+          <h1>Geographical areas</h1>
+          <p>Screen GAs by demand, biomass, pipeline and competition.</p>
         </div>
       </div>
 
@@ -223,14 +219,12 @@ export function GaPage() {
             <div className="verdict-badge">{feasibility.verdict}</div>
             <div>
               <h1>{selected.area}</h1>
-              <p>
-                GA {selected.gaId} · {selected.entity} · {selected.state}
-                {selected.authDate ? ` · auth ${selected.authDate}` : ""}
+              <p className="meta-line">
+                {selected.gaId} · {selected.entity} · {feasibility.summary}
               </p>
-              <p style={{ marginTop: "0.45rem" }}>{feasibility.summary}</p>
-              <div className="btn-row" style={{ marginTop: "0.75rem" }}>
-                <span className="btn" style={{ cursor: "default" }}>Growth {fmt(multiple, 1)}×</span>
-                <span className="btn" style={{ cursor: "default" }}>Pipeline {selected.flagNearestPipeline ? "Y" : "N"}</span>
+              <div className="btn-row" style={{ marginTop: "0.55rem" }}>
+                <span className="btn" style={{ cursor: "default" }}>{fmt(multiple, 1)}× growth</span>
+                {selected.flagNearestPipeline ? <span className="btn" style={{ cursor: "default" }}>Pipeline</span> : null}
                 <span className="btn" style={{ cursor: "default" }}>{selected.plantCount} plants</span>
               </div>
             </div>
@@ -250,7 +244,6 @@ export function GaPage() {
                   <span className={`level ${p.level}`}>{p.level}</span>
                 </div>
                 <h3>{p.headline}</h3>
-                <p>{p.detail}</p>
               </button>
             ))}
           </div>

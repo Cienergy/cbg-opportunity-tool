@@ -99,35 +99,29 @@ export function DistrictCharts({ district, catchment, plants }: Props) {
     <div className="charts-grid">
       <div className="panel">
         <div className="panel-head">
-          <h2>Addressable demand growth</h2>
+          <h2>Addressable demand</h2>
           <span className="muted">
-            {fmt(catchment.growthMultiple, 1)}× · CAGR {fmt(catchment.cagrPct, 1)}%
+            {fmt(catchment.growthMultiple, 1)}× · {fmt(catchment.cagrPct, 1)}% CAGR
           </span>
         </div>
         <div className="panel-body chart-box">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={growthStack}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.06)" />
-              <XAxis dataKey="period" />
-              <YAxis unit=" TPD" width={48} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.05)" />
+              <XAxis dataKey="period" tick={{ fontSize: 12 }} />
+              <YAxis unit=" TPD" width={48} tick={{ fontSize: 12 }} />
               <Tooltip />
               <Legend />
               <Bar dataKey="Home GA" stackId="a" fill="#0d9488" radius={[0, 0, 0, 0]} />
               <Bar dataKey="Nearby GAs" stackId="a" fill="#f59e0b" radius={[2, 2, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-          <p className="chart-note">
-            Policy view: offtake can include home GA plus nearby GAs covering peer districts in the same state.
-            Addressable now <strong>{fmt(catchment.addressableNow, 1)} TPD</strong> → 5Y{" "}
-            <strong>{fmt(catchment.addressable5y, 1)} TPD</strong>.
-          </p>
         </div>
       </div>
 
       <div className="panel">
         <div className="panel-head">
-          <h2>Location growth path</h2>
-          <span className="muted">district vs addressable (interpolated)</span>
+          <h2>Growth path</h2>
         </div>
         <div className="panel-body chart-box">
           <ResponsiveContainer width="100%" height="100%">
@@ -145,7 +139,7 @@ export function DistrictCharts({ district, catchment, plants }: Props) {
       </div>
 
       <div className="panel">
-        <div className="panel-head"><h2>Nearby GA offtake map</h2></div>
+        <div className="panel-head"><h2>Nearby GA offtake</h2></div>
         <div className="panel-body chart-box tall">
           {gaBars.length === 0 ? (
             <p className="muted">No GA matches found for this district / peers.</p>

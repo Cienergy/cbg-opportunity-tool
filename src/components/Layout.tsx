@@ -17,10 +17,7 @@ export function Layout() {
           <div className="brand-mark" aria-hidden>C</div>
           <div>
             <strong>Feasibility Desk</strong>
-            <span>
-              CBG · Investor / BD
-              {data ? ` · ${data.meta.districtCount} districts · ${data.meta.gaCount} GAs` : ""}
-            </span>
+            <span>{data ? `${data.meta.districtCount} districts · ${data.meta.gaCount} GAs` : "CBG screening"}</span>
           </div>
         </div>
         <nav className="nav">
