@@ -231,8 +231,140 @@ export function assessDistrict(
   return { score, verdict, summary, pillars };
 }
 
+export function assessGa(g: import("./types").GA, params: ControlParams): Feasibility {
+  const demandNow = g.currentDemandTpd || 0;
+  const demand5y = g.futureDemandTpd || 0;
+
+  let demandPts = 0;
+  if (demandNow >= params.netCbgDemandTpd * 2) demandPts += 45;
+  else if (demandNow >= params.netCbgDemandTpd) demandPts += 32;
+  else if (demandNow >= params.netCbgDemandTpd * 0.5) demandPts += 16;
+  if (demand5y >= params.netEstDemand5yTpd * 2) demandPts += 35;
+  else if (demand5y >= params.netEstDemand5yTpd) demandPts += 25;
+  else if (demand5y >= params.netEstDemand5yTpd * 0.5) demandPts += 12;
+  if ((g.cngStations || 0) >= 20) demandPts += 10;
+  else if ((g.cngStations || 0) >= 5) demandPts += 5;
+  demandPts = Math.min(100, demandPts);
+
+  const growth =
+    demandNow > 0 ? demand5y / demandNow : demand5y > 0 ? 2 : 1;
+  const cagr =
+    demandNow > 0 && demand5y > 0 ? (Math.pow(demand5y / demandNow, 1 / 5) - 1) * 100 : 0;
+
+  const demand: Pillar = {
+    id: "demand",
+    label: "Demand",
+    level: levelFrom(demandPts),
+    headline:
+      demandPts >= 75 ? "Strong GA offtake" : demandPts >= 45 ? "Moderate GA demand" : "Thin GA demand",
+    detail: `GA demand ${fmt(demandNow, 2)} TPD → ${fmt(demand5y, 2)} TPD in 5Y (${fmt(growth, 1)}× · CAGR ${fmt(cagr, 1)}%).`,
+    metrics: [
+      { label: "Current demand", value: `${fmt(demandNow, 2)} TPD` },
+      { label: "5Y demand", value: `${fmt(demand5y, 2)} TPD` },
+      { label: "CNG stations", value: fmt(g.cngStations, 0) },
+      { label: "PNG households", value: fmt(g.pngHh, 0) },
+    ],
+  };
+
+  let bioPts = 0;
+  if (g.netSurplusKtpa >= params.netBiomassSurplusKtpa * 2) bioPts += 70;
+  else if (g.netSurplusKtpa >= params.netBiomassSurplusKtpa) bioPts += 55;
+  else if (g.netSurplusKtpa >= params.netBiomassSurplusKtpa * 0.5) bioPts += 28;
+  else if (g.netSurplusKtpa > 0) bioPts += 12;
+  bioPts = Math.min(100, bioPts);
+
+  const biomass: Pillar = {
+    id: "biomass",
+    label: "Biomass",
+    level: levelFrom(bioPts),
+    headline:
+      bioPts >= 75 ? "Healthy surplus in GA" : bioPts >= 45 ? "Adequate surplus" : "Feedstock tight",
+    detail: `Net surplus ${fmt(g.netSurplusKtpa, 1)} KTPA · feedstock used ${fmt(g.feedstockUsedTpd, 1)} TPD.`,
+    metrics: [
+      { label: "Net surplus", value: `${fmt(g.netSurplusKtpa, 1)} KTPA` },
+      { label: "Gross surplus", value: `${fmt(g.grossSurplusKtpa, 1)} KTPA` },
+      { label: "Feedstock used", value: `${fmt(g.feedstockUsedTpd, 1)} TPD` },
+      { label: "Gov support", value: g.govSupport || "—" },
+    ],
+  };
+
+  let pipePts = 0;
+  if (g.flagNearestPipeline) pipePts += 40;
+  if (g.pipelineName) pipePts += 25;
+  if (g.pipelineMmscmd && g.pipelineMmscmd >= 20) pipePts += 20;
+  else if (g.pipelineMmscmd && g.pipelineMmscmd > 0) pipePts += 10;
+  if (g.pipelineDistanceKm != null && g.pipelineDistanceKm > 0) pipePts += 10;
+  pipePts = Math.min(100, pipePts);
+
+  const pipeline: Pillar = {
+    id: "pipeline",
+    label: "Pipeline",
+    level: levelFrom(pipePts),
+    headline: pipePts >= 75 ? "Pipeline-backed GA" : pipePts >= 45 ? "Partial infra link" : "Weak pipeline story",
+    detail: g.pipelineName
+      ? `${g.pipelineName} · ${fmt(g.pipelineDistanceKm, 0)} km · ${fmt(g.pipelineMmscmd, 1)} MMSCMD`
+      : "No pipeline linked on this GA row.",
+    metrics: [
+      { label: "Pipeline", value: g.pipelineName || "—" },
+      { label: "Type", value: g.pipelineType || "—" },
+      { label: "Distance / length", value: fmt(g.pipelineDistanceKm, 0) },
+      { label: "Capacity", value: g.pipelineMmscmd != null ? `${fmt(g.pipelineMmscmd, 1)} MMSCMD` : "—" },
+    ],
+  };
+
+  const total = g.plantCount || 0;
+  let compPts = 0;
+  if (total === 0) compPts = 88;
+  else if ((g.functionalCompleted || 0) === 0 && total <= 2) compPts = 70;
+  else if (total <= 2) compPts = 55;
+  else if (total <= 4) compPts = 40;
+  else compPts = 22;
+
+  const competition: Pillar = {
+    id: "competition",
+    label: "Competition",
+    level: levelFrom(compPts),
+    headline:
+      total === 0
+        ? "White-space GA"
+        : `${g.functionalCompleted || 0} live · ${total} total plants`,
+    detail: `Capacity ${fmt(g.capacityTpd, 1)} TPD · UC ${g.underConstruction || 0} · yet to start ${g.yetToStart || 0}.`,
+    metrics: [
+      { label: "Plants", value: String(total) },
+      { label: "Functional", value: String(g.functionalCompleted || 0) },
+      { label: "Under construction", value: String(g.underConstruction || 0) },
+      { label: "Capacity", value: `${fmt(g.capacityTpd, 1)} TPD` },
+    ],
+  };
+
+  const pillars = [demand, biomass, pipeline, competition];
+  const score = Math.round(demandPts * 0.3 + bioPts * 0.3 + pipePts * 0.25 + compPts * 0.15);
+  const strongCount = pillars.filter((p) => p.level === "strong").length;
+  const weakCount = pillars.filter((p) => p.level === "weak").length;
+
+  let verdict: Feasibility["verdict"] = "Watch";
+  if (score >= 70 && weakCount === 0) verdict = "Invest";
+  else if (score >= 60 && strongCount >= 2 && weakCount <= 1) verdict = "Invest";
+  else if (score < 45 || weakCount >= 3) verdict = "Pass";
+
+  const summary =
+    verdict === "Invest"
+      ? "This GA looks investable on demand, biomass and infrastructure together."
+      : verdict === "Watch"
+        ? "Mixed GA profile — workable with the right plant size and offtake structure."
+        : "Weak GA on current thresholds; better as a pass unless strategic.";
+
+  return { score, verdict, summary, pillars };
+}
+
 export function rankDistricts(districts: District[], params: ControlParams, plants: Plant[]) {
   return districts
     .map((d) => ({ d, feasibility: assessDistrict(d, params, plants) }))
+    .sort((a, b) => b.feasibility.score - a.feasibility.score);
+}
+
+export function rankGas(gas: import("./types").GA[], params: ControlParams) {
+  return gas
+    .map((g) => ({ g, feasibility: assessGa(g, params) }))
     .sort((a, b) => b.feasibility.score - a.feasibility.score);
 }

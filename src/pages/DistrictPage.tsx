@@ -216,6 +216,25 @@ export function DistrictPage() {
         </aside>
 
         <section className="main">
+          <div className="kpi-row">
+            <div className="kpi-card tone-teal">
+              <div className="kpi-label">Addressable now</div>
+              <div className="kpi-value">{fmt(catchment.addressableNow, 1)}<span>TPD</span></div>
+            </div>
+            <div className="kpi-card tone-blue">
+              <div className="kpi-label">Addressable 5Y</div>
+              <div className="kpi-value">{fmt(catchment.addressable5y, 1)}<span>TPD</span></div>
+            </div>
+            <div className="kpi-card tone-amber">
+              <div className="kpi-label">Biomass surplus</div>
+              <div className="kpi-value">{fmt(selected.netSurplusKtpa, 0)}<span>KTPA</span></div>
+            </div>
+            <div className="kpi-card tone-rose">
+              <div className="kpi-label">Feasibility</div>
+              <div className="kpi-value">{feasibility.score}<span>{feasibility.verdict}</span></div>
+            </div>
+          </div>
+
           <div className={`panel verdict ${feasibility.verdict}`}>
             <div className="verdict-badge">{feasibility.verdict}</div>
             <div>

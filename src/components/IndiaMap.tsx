@@ -49,10 +49,10 @@ export function IndiaMap({ selectedState, onSelectState, metricByState = {}, hei
     const t = v / max;
     const selected = selectedState && matchesState(selectedState, name);
     return {
-      fillColor: selected ? "#c4a574" : `rgba(63, 168, 122, ${0.08 + t * 0.55})`,
-      weight: selected ? 1.8 : 0.8,
-      color: selected ? "#e8d5b0" : "rgba(232,236,233,0.18)",
-      fillOpacity: 0.95,
+      fillColor: selected ? "#0d9488" : `rgba(59, 130, 246, ${0.12 + t * 0.55})`,
+      weight: selected ? 2 : 1,
+      color: selected ? "#0f766e" : "rgba(100, 116, 139, 0.45)",
+      fillOpacity: 0.92,
     };
   };
 
@@ -61,7 +61,7 @@ export function IndiaMap({ selectedState, onSelectState, metricByState = {}, hei
       <MapContainer center={[22.5, 82]} zoom={4.6} scrollWheelZoom style={{ height: "100%", width: "100%" }}>
         <TileLayer
           attribution='&copy; OSM'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
         <FlyTo feature={selectedFeature} />
         {geo && (

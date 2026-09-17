@@ -3,6 +3,7 @@ import { useData } from "../lib/DataContext";
 
 const links = [
   { to: "/", label: "District", end: true },
+  { to: "/gas", label: "GAs", end: false },
   { to: "/scan", label: "Scan", end: false },
   { to: "/thresholds", label: "Thresholds", end: false },
 ];
@@ -17,8 +18,8 @@ export function Layout() {
           <div>
             <strong>Feasibility Desk</strong>
             <span>
-              CBG · Investor intelligence
-              {data ? ` · ${data.meta.districtCount} districts` : ""}
+              CBG · Investor / BD
+              {data ? ` · ${data.meta.districtCount} districts · ${data.meta.gaCount} GAs` : ""}
             </span>
           </div>
         </div>
